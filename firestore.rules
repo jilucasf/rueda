@@ -1,0 +1,56 @@
+rules_version = '2';
+// Reglas de seguridad de Rueda (pegar en Firestore Database → Reglas → Publicar).
+// - Para ver la lista hay que ser "miembro": haber entrado una vez con el código de invitación.
+// - El código está en privado/acceso y nadie puede leerlo desde la app; solo lo comprueban estas reglas.
+// - Cambiar el código impide nuevas altas con el antiguo, pero no expulsa a quien ya es miembro.
+// - Cada persona solo puede crear, cambiar o borrar SU propio horario.
+// - Quien esté en la colección "admins" puede quitar a cualquiera.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function conSesion() { return request.auth != null; }
+    function esMiembro() {
+      return conSesion() && exists(/databases/$(database)/documents/miembros/$(request.auth.uid));
+    }
+    function esAdmin() {
+      return conSesion() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    function horarioValido() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['nombre', 'via', 'contacto', 'dias', 'actualizado'])
+        && d.nombre is string && d.nombre.size() > 0 && d.nombre.size() <= 40
+        && d.via is string && d.via.size() <= 20
+        && d.contacto is string && d.contacto.size() > 0 && d.contacto.size() <= 60
+        && d.dias is map && d.dias.size() <= 6
+        && d.actualizado is string;
+    }
+
+    // Código de invitación: invisible para la app
+    match /privado/{doc} {
+      allow read, write: if false;
+    }
+
+    // Alta en el grupo: solo con el código correcto y aceptando el aviso de privacidad
+    match /miembros/{uid} {
+      allow read: if conSesion() && request.auth.uid == uid;
+      allow create: if conSesion() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['codigo', 'aceptaPrivacidad', 'fecha'])
+        && request.resource.data.codigo == get(/databases/$(database)/documents/privado/acceso).data.codigo
+        && request.resource.data.aceptaPrivacidad == true
+        && request.resource.data.fecha is string;
+      allow update: if false;
+      allow delete: if conSesion() && (request.auth.uid == uid || esAdmin());
+    }
+
+    match /horarios/{uid} {
+      allow read: if esMiembro();
+      allow create, update: if esMiembro() && request.auth.uid == uid && horarioValido();
+      allow delete: if conSesion() && (request.auth.uid == uid || esAdmin());
+    }
+
+    match /admins/{uid} {
+      allow read: if conSesion() && request.auth.uid == uid;
+      allow write: if false;
+    }
+  }
+}

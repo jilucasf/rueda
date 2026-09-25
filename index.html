@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rueda Valladolid Segovia</title>
+<meta name="description" content="Encuentra con quién compartir coche entre Valladolid y Segovia según tu horario de trabajo.">
+<meta name="theme-color" content="#1D5FA8">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rueda">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;800&family=Overpass+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --ground:#EEF1F3;
+  --surface:#FFFFFF;
+  --ink:#172126;
+  --muted:#5B6870;
+  --line:#D5DCE0;
+  --sign:#1D5FA8;
+  --blue:#1D5FA8;
+  --blue-soft:#E3ECF7;
+  --amber-soft:#FBF0DA;
+  --danger:#B3352B;
+  --on-accent:#FFFFFF;
+  --font:"Overpass",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Overpass Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    color-scheme:dark;
+    --ground:#0F1518;--surface:#182126;--ink:#E6ECEF;--muted:#94A2AA;--line:#2A363C;
+    --sign:#1B4F8C;--blue:#7AAEEA;--blue-soft:#1A2D42;--amber-soft:#3A2E16;
+    --danger:#EF7A6F;--on-accent:#0F1518;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;padding-inline:16px;padding-block:env(safe-area-inset-top,0px) calc(88px + env(safe-area-inset-bottom,0px))}
+body.noauth{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:480px;margin:0 auto}
+button,input,select{font:inherit;color:inherit}
+button{-webkit-tap-highlight-color:transparent;cursor:pointer}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* Cabecera: cartel azul de carretera */
+header{padding-block:16px 4px}
+.sign{background:var(--sign);color:#fff;border-radius:10px;padding:12px 14px 10px;box-shadow:inset 0 0 0 2px rgb(255 255 255 / .92),0 0 0 3px var(--sign);margin:3px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sign h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.01em;line-height:1}
+.sign .route{font-size:14px;opacity:.9;margin-top:5px}
+.sign .km{font-family:var(--mono);font-size:22px;font-weight:600;text-align:right;line-height:1;white-space:nowrap}
+.sign .km small{display:block;font-family:var(--font);font-size:12px;font-weight:400;opacity:.85;margin-top:4px}
+
+h2{font-size:20px;margin:18px 0 4px;text-wrap:balance}
+.lead{color:var(--muted);margin:0 0 12px;font-size:15px}
+.banner{background:var(--amber-soft);border-radius:8px;padding:10px 14px 8px;margin-top:12px;font-size:14px}
+
+/* Acceso */
+.auth{margin-top:20px;display:flex;flex-direction:column;gap:14px}
+.auth h2{margin:0;font-size:24px}
+.auth .lead{margin:0}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:17px}
+.gbtn svg{width:20px;height:20px}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}
+.or::before,.or::after{content:"";flex:1;border-top:1px solid var(--line)}
+.sent{background:var(--blue-soft);border-radius:12px;padding:14px 16px 12px;font-size:15px}
+.sent b{display:block;margin-bottom:4px;font-size:17px}
+.small{font-size:13px;color:var(--muted);margin:0}
+.aviso{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px 10px;font-size:14px;max-height:260px;overflow-y:auto}
+.aviso h3{margin:0 0 6px;font-size:13px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.aviso dl{margin:0;display:grid;grid-template-columns:1fr;gap:6px}
+.aviso dt{font-weight:700}
+.aviso dd{margin:0;color:var(--muted)}
+.accept{display:flex;gap:10px;align-items:flex-start;font-size:15px;cursor:pointer}
+.accept input{width:22px;height:22px;flex:none;margin-top:1px;accent-color:var(--blue)}
+.codigo{text-transform:uppercase;letter-spacing:.12em;font-family:var(--mono);font-size:20px!important;text-align:center}
+details.priv{margin-top:18px}
+details.priv summary{cursor:pointer;color:var(--blue);font-weight:600;font-size:14px}
+details.priv .aviso{margin-top:8px;max-height:none}
+.steps{margin:0;padding-left:20px;color:var(--muted);font-size:14px;display:flex;flex-direction:column;gap:4px}
+
+/* Pestañas inferiores */
+.tabbar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:6px 16px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
+.tabbar-in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tabbar button{border:0;background:transparent;border-radius:10px;padding:8px 0 6px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;font-size:13px}
+.tabbar button svg{width:22px;height:22px}
+.tabbar button[aria-selected="true"]{color:var(--blue);background:var(--blue-soft)}
+
+/* Días */
+.dayfilter{display:flex;gap:6px;margin:4px 0 12px;flex-wrap:wrap}
+.dayfilter button{border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;height:52px;min-width:52px;padding:0 10px;border-radius:12px;line-height:1.1;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);font-weight:600;font-size:14px;color:var(--muted)}
+.dayfilter button .n{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue)}
+.dayfilter button[aria-pressed="true"]{background:var(--ink);color:var(--ground);box-shadow:none}
+.dayfilter button[aria-pressed="true"] .n{color:var(--ground);opacity:.8}
+
+#lista{display:flex;flex-direction:column;gap:12px}
+.mine{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px 10px;display:grid;grid-template-columns:1fr 1fr auto;gap:4px 12px;align-items:end}
+.mine .who{grid-column:1/-1;font-size:13px;color:var(--muted)}
+.mine .who b{color:var(--ink)}
+.mine .t small{display:block;font-size:12px;color:var(--muted)}
+.mine .t span{font-family:var(--mono);font-size:26px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.leg{margin-top:6px}
+.leg h3{display:flex;align-items:baseline;gap:8px;margin:0 0 6px;font-size:13px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.leg h3 .arrow{color:var(--blue);font-size:16px}
+.verdict{font-size:17px;font-weight:600;margin:0 0 8px;text-wrap:balance}
+.verdict.none{font-weight:400;color:var(--muted);font-size:15px}
+.people{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.pp{display:grid;grid-template-columns:36px 1fr auto;gap:2px 10px;align-items:center;padding:12px 14px 10px;border-top:1px solid var(--line)}
+.pp:first-child{border-top:0}
+.initials{width:36px;height:36px;border-radius:50%;flex:none;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;padding-top:2px;grid-row:1/3}
+.pp .nm{font-weight:700;overflow-wrap:anywhere}
+.pp .tm{text-align:right;font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
+.pp .tm small{display:block;font-family:var(--font);font-weight:400;font-size:11px;color:var(--muted)}
+.pp .ct{grid-column:2/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.pp .ct code{font-family:var(--mono);background:var(--ground);color:var(--ink);padding:3px 8px 1px;border-radius:6px;user-select:all;overflow-wrap:anywhere}
+.pp .ct .btn{margin-left:auto}
+.empty{text-align:center;color:var(--muted);padding:32px 16px;border:2px dashed var(--line);border-radius:12px}
+.empty b{display:block;color:var(--ink);margin-bottom:4px}
+
+.btn{border:0;border-radius:10px;padding:10px 16px 8px;font-weight:600;background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);white-space:nowrap;min-height:40px}
+.btn.primary{background:var(--blue);color:var(--on-accent);box-shadow:none}
+.btn.small{padding:6px 12px 4px;font-size:14px;min-height:34px}
+.btn.block{display:block;width:100%;font-size:17px;padding:14px 16px 12px;min-height:52px}
+.btn.danger-line{color:var(--danger);box-shadow:inset 0 0 0 1px var(--danger);background:transparent}
+.btn.danger-solid{background:var(--danger);color:var(--surface);box-shadow:none}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.linkbtn{border:0;background:none;color:var(--blue);font-weight:600;padding:4px 0;font-size:14px}
+.linkbtn.danger{color:var(--danger)}
+
+/* Formulario */
+.box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px;margin-bottom:12px}
+.box h3{margin:0;font-size:13px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:13px;font-weight:600;color:var(--muted)}
+input[type=text],input[type=email],input[type=time],select{width:100%;background:var(--ground);border:1px solid var(--line);border-radius:10px;padding:9px 10px 7px;font-size:16px;min-height:44px}
+.auth input[type=email]{background:var(--surface);min-height:52px;padding-inline:14px}
+.cgrid{display:grid;grid-template-columns:130px 1fr;gap:8px}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.dhead,.drow{display:grid;grid-template-columns:44px 1fr 1fr;gap:8px;align-items:center}
+.dhead{font-size:12px;font-weight:600;color:var(--muted);line-height:1.2}
+.drow .dl{font-weight:800;font-size:15px;color:var(--blue);display:flex;flex-direction:column;align-items:center;gap:2px}
+.drow .dl small{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.drow.off .dl{color:var(--muted)}
+.drow.off input{opacity:.35}
+.row-actions{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.err{color:var(--danger);font-size:14px;margin:0 0 10px}
+.saved{font-size:13px;color:var(--muted);text-align:center;margin:8px 0 0}
+.baja{margin-top:28px}
+.confirm p{margin:0 0 10px}
+.confirm-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.confirm-btns .btn{min-height:48px}
+.done{background:var(--blue-soft);border-color:transparent;display:block;margin-top:16px;font-size:15px}
+.session{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-top:18px;flex-wrap:wrap}
+.session span{overflow-wrap:anywhere}
+
+#toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--ground);padding:10px 18px 8px;border-radius:10px;font-weight:600;z-index:20;max-width:calc(100% - 32px);text-align:center}
+@media (max-width:360px){.cgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body class="noauth">
+<div class="wrap">
+  <header>
+    <div class="sign">
+      <div>
+        <h1>Rueda</h1>
+        <div class="route">Valladolid ⇄ Segovia</div>
+      </div>
+      <div class="km">115<small>km · A-601</small></div>
+    </div>
+    <div class="banner" id="banner" hidden></div>
+  </header>
+
+  <!-- Acceso -->
+  <section id="v-auth" class="auth" hidden aria-labelledby="t-auth">
+    <div id="auth-start">
+      <h2 id="t-auth">Comparte el viaje a Segovia</h2>
+      <p class="lead">Apunta tu horario y descubre quién llega y sale de Segovia a tu misma hora. Después os escribís y os organizáis vosotros.</p>
+    </div>
+    <button type="button" class="gbtn" id="btn-google">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
+      Continuar con Google
+    </button>
+    <div class="or">o con cualquier correo</div>
+    <form id="form-mail" novalidate>
+      <div class="field">
+        <label for="f-mail">Tu correo electrónico</label>
+        <input type="email" id="f-mail" autocomplete="email" inputmode="email" placeholder="nombre@correo.es">
+      </div>
+      <p class="err" id="mail-err" hidden style="margin-top:8px"></p>
+      <button type="submit" class="btn primary block" id="btn-mail" style="margin-top:10px">Enviarme el enlace de acceso</button>
+    </form>
+    <div class="sent" id="mail-sent" hidden role="status">
+      <b>Revisa tu correo</b>
+      Te hemos enviado un enlace a <span id="mail-to"></span>. Ábrelo <strong>en este mismo móvil</strong> y entrarás directamente, sin contraseña.
+      <p class="small" style="margin-top:8px">¿No llega? Mira en correo no deseado o <button type="button" class="linkbtn" id="mail-again">prueba otra vez</button>.</p>
+    </div>
+    <ul class="steps">
+      <li>Sin contraseñas: entras con Google o con un enlace a tu correo.</li>
+      <li>El móvil te recuerda: la próxima vez entras directamente.</li>
+      <li>Te das de baja cuando quieras con un botón.</li>
+    </ul>
+  </section>
+
+  <!-- Código de invitación + aviso de privacidad -->
+  <section id="v-codigo" class="auth" hidden aria-labelledby="t-codigo">
+    <div>
+      <h2 id="t-codigo">Código de invitación</h2>
+      <p class="lead">Rueda es solo para el grupo de personas que hacen el trayecto. Escribe el código que te ha pasado quien te invitó.</p>
+    </div>
+    <form id="form-codigo" novalidate>
+      <div class="field">
+        <label for="f-codigo">Código</label>
+        <input type="text" id="f-codigo" class="codigo" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="30" placeholder="XXXXXXXX">
+        <p class="hint" id="demo-codigo" hidden>En la demostración el código es SEGOVIA2026.</p>
+      </div>
+      <div class="aviso" id="aviso-1" style="margin-top:14px"></div>
+      <label class="accept" style="margin-top:14px"><input type="checkbox" id="f-acepto"> <span>He leído el aviso de privacidad y acepto que mi nombre, mi contacto y mi horario sean visibles para las demás personas apuntadas.</span></label>
+      <p class="err" id="codigo-err" hidden style="margin-top:10px"></p>
+      <button type="submit" class="btn primary block" id="btn-codigo" style="margin-top:12px">Entrar en Rueda</button>
+    </form>
+    <p class="small"><span id="codigo-who"></span> <button type="button" class="linkbtn" id="otra-cuenta">Usar otra cuenta</button></p>
+  </section>
+
+  <!-- Coincidencias -->
+  <section id="v-coin" hidden aria-labelledby="t-coin">
+    <h2 id="t-coin">Coincidencias</h2>
+    <p class="lead" id="lead"></p>
+    <div class="dayfilter" id="dayfilter" role="group" aria-label="Día de la semana"></div>
+    <div id="lista" aria-live="polite"></div>
+  </section>
+
+  <!-- Mi horario -->
+  <section id="v-yo" hidden aria-labelledby="t-yo">
+    <div class="box done" id="baja-ok" hidden role="status"><b>Te has dado de baja.</b> Tus datos se han borrado de Rueda y ya no apareces a nadie.</div>
+    <h2 id="t-yo">Mis datos</h2>
+    <p class="lead">Solo tu nombre, cómo contactarte y tu horario. Deja en blanco los días que no vas a Segovia.</p>
+    <form id="form" novalidate>
+      <div class="box">
+        <h3>Quién eres</h3>
+        <div class="field"><label for="f-nombre">Nombre</label><input type="text" id="f-nombre" maxlength="40" placeholder="Ana García" autocomplete="name"></div>
+        <div class="field">
+          <label for="f-contacto">Forma de contacto preferida</label>
+          <div class="cgrid">
+            <select id="f-via" aria-label="Medio de contacto">
+              <option>WhatsApp</option><option>Teléfono</option><option>Telegram</option><option>Correo</option>
+            </select>
+            <input type="text" id="f-contacto" maxlength="60" placeholder="600 123 456" autocomplete="tel">
+          </div>
+          <p class="hint">Lo verán las demás personas apuntadas a Rueda.</p>
+        </div>
+      </div>
+
+      <div class="box">
+        <h3>Mi horario</h3>
+        <div class="dhead"><span></span><span>Tengo que estar en Segovia a las</span><span>Salgo de Segovia a las</span></div>
+        <div id="dias"></div>
+        <div class="row-actions">
+          <button type="button" class="linkbtn" id="copiar-lunes">Copiar el lunes al resto</button>
+          <button type="button" class="linkbtn" id="ver-sabado">Añadir sábado</button>
+        </div>
+      </div>
+
+      <p class="err" id="form-err" hidden></p>
+      <button type="submit" class="btn primary block" id="guardar">Guardar</button>
+      <p class="saved" id="saved-at"></p>
+    </form>
+
+    <div class="box baja" id="baja-box" hidden>
+      <h3>Darme de baja</h3>
+      <p class="hint">Se borran tu nombre, tu contacto y tu horario, y dejas de aparecer a los demás en ese momento. Puedes volver a apuntarte cuando quieras.</p>
+      <button type="button" class="btn danger-line block" id="borrar-mio">Darme de baja</button>
+      <div class="confirm" id="baja-confirm" hidden>
+        <p><b>¿Quieres eliminarte de Rueda?</b></p>
+        <div class="confirm-btns">
+          <button type="button" class="btn" id="baja-no">No, seguir</button>
+          <button type="button" class="btn danger-solid" id="baja-si">Sí, eliminarme</button>
+        </div>
+      </div>
+    </div>
+
+    <details class="priv"><summary>Aviso de privacidad</summary><div class="aviso" id="aviso-2"></div></details>
+    <div class="session"><span id="session-who"></span><button type="button" class="linkbtn" id="salir">Cerrar sesión</button></div>
+  </section>
+</div>
+
+<nav class="tabbar" id="tabbar" role="tablist" aria-label="Secciones" hidden>
+  <div class="tabbar-in">
+    <button type="button" role="tab" id="tab-coin" aria-selected="true" aria-controls="v-coin">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="3.2"/><circle cx="16.5" cy="9.5" r="2.6"/><path d="M2.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5M13.5 15.2c.9-.8 1.9-1.2 3-1.2 2.2 0 3.9 1.5 4.5 4"/></svg>
+      Coincidencias
+    </button>
+    <button type="button" role="tab" id="tab-yo" aria-selected="false" aria-controls="v-yo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+      Mi horario
+    </button>
+  </div>
+</nav>
+
+<div id="toast" role="status" hidden></div>
+
+<script src="firebase-config.js"></script>
+<script type="module">
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const MARGEN = 30; // minutos
+const LETRA = { 1: "L", 2: "M", 3: "X", 4: "J", 5: "V", 6: "S" };
+const NOMBRE_DIA = { 1: "lunes", 2: "martes", 3: "miércoles", 4: "jueves", 5: "viernes", 6: "sábado" };
+const min = t => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+const hm = m => String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0");
+const CLAVE_MAIL = "rueda-email-acceso";
+
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function toast(m) { const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 2800); }
+function banner(t) { const b = $("#banner"); b.textContent = t; b.hidden = !t; }
+const store = { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }, del: k => { try { localStorage.removeItem(k); } catch (e) {} } };
+const iniciales = n => (n || "?").trim().split(/\s+/).slice(0, 2).map(p => p[0]).join("").toUpperCase();
+const va = (h, d) => h && h.dias && h.dias[d] && (h.dias[d].llegada || h.dias[d].salida);
+const hayS = h => !!(h && h.dias && va(h, 6));
+
+// ================= Backend: Firebase o modo demostración =================
+const cfg = window.RUEDA_FIREBASE || {};
+const DEMO = !cfg.apiKey || cfg.apiKey === "PEGAR_AQUI";
+let api; // { onAuth(cb), google(), sendLink(email), finishLink(email), signOut(), watch(cb), save(uid,d), remove(uid), deleteAccount(), isAdmin(uid) }
+
+if (DEMO) {
+  api = demoApi();
+  banner("Versión de prueba: las demás personas son ficticias y lo que guardes se queda solo en este móvil.");
+} else {
+  const V = "10.12.2";
+  const [{ initializeApp }, A, F] = await Promise.all([
+    import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`),
+    import(`https://www.gstatic.com/firebasejs/${V}/firebase-auth.js`),
+    import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`)
+  ]);
+  const app = initializeApp(cfg);
+  const auth = A.getAuth(app); auth.languageCode = "es";
+  const db = F.getFirestore(app);
+  api = {
+    onAuth: cb => A.onAuthStateChanged(auth, cb),
+    async google() {
+      const p = new A.GoogleAuthProvider(); p.setCustomParameters({ prompt: "select_account" });
+      try { await A.signInWithPopup(auth, p); }
+      catch (e) { if (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment") await A.signInWithRedirect(auth, p); else throw e; }
+    },
+    sendLink: email => A.sendSignInLinkToEmail(auth, email, { url: location.origin + location.pathname, handleCodeInApp: true }),
+    isLink: () => A.isSignInWithEmailLink(auth, location.href),
+    finishLink: email => A.signInWithEmailLink(auth, email, location.href),
+    signOut: () => A.signOut(auth),
+    watch: (cb, err) => F.onSnapshot(F.collection(db, "horarios"), s => cb(s.docs.map(d => ({ id: d.id, ...d.data() }))), err),
+    save: (uid, d) => F.setDoc(F.doc(db, "horarios", uid), d),
+    remove: uid => F.deleteDoc(F.doc(db, "horarios", uid)),
+    async deleteAccount() { try { await auth.currentUser.delete(); } catch (e) { await A.signOut(auth); } },
+    isAdmin: async uid => { try { return (await F.getDoc(F.doc(db, "admins", uid))).exists(); } catch (e) { return false; } },
+    esMiembro: async uid => { try { return (await F.getDoc(F.doc(db, "miembros", uid))).exists(); } catch (e) { return false; } },
+    unirse: (uid, codigo) => F.setDoc(F.doc(db, "miembros", uid), { codigo, aceptaPrivacidad: true, fecha: new Date().toISOString() }),
+    salirGrupo: uid => F.deleteDoc(F.doc(db, "miembros", uid))
+  };
+}
+
+function demoApi() {
+  // Versión de prueba: 10 personas ficticias + la persona que prueba, cuyo horario se guarda solo en su navegador.
+  const sem = (ll, sa, extra) => { const o = {}; for (let d = 1; d <= 5; d++) o[d] = { llegada: ll, salida: sa }; return Object.assign(o, extra || {}); };
+  const FICTICIOS = [
+    { id: "e1", nombre: "Lucía Martín (ficticia)", via: "WhatsApp", contacto: "600 000 001", dias: sem("08:15", "15:00", { 5: { llegada: "08:15", salida: "14:00" } }) },
+    { id: "e2", nombre: "Marcos Herrero (ficticio)", via: "Telegram", contacto: "@marcos_prueba", dias: { 1: { llegada: "09:30", salida: "17:15" }, 2: { llegada: "09:30", salida: "17:15" }, 4: { llegada: "09:30", salida: "17:15" } } },
+    { id: "e3", nombre: "Elena Sanz (ficticia)", via: "Teléfono", contacto: "600 000 003", dias: sem("07:30", "16:45", { 5: { llegada: "07:30", salida: "15:00" } }) },
+    { id: "e4", nombre: "Javier Pastor (ficticio)", via: "Correo", contacto: "javier@prueba.es", dias: { 2: { llegada: "08:40", salida: "14:30" }, 3: { llegada: "08:40", salida: "14:30" } } },
+    { id: "e5", nombre: "Carmen Velasco (ficticia)", via: "WhatsApp", contacto: "600 000 005", dias: { 1: { llegada: "08:00", salida: "17:30" }, 2: { llegada: "08:00", salida: "17:30" }, 3: { llegada: "08:00", salida: "17:30" }, 4: { llegada: "08:00", salida: "17:30" } } },
+    { id: "e6", nombre: "Pablo Gil (ficticio)", via: "Teléfono", contacto: "600 000 006", dias: { 1: { llegada: "10:00", salida: "19:00" }, 2: { llegada: "10:00", salida: "19:00" }, 3: { llegada: "10:00", salida: "19:00" } } },
+    { id: "e7", nombre: "Rosa Calvo (ficticia)", via: "WhatsApp", contacto: "600 000 007", dias: { 1: { llegada: "07:45", salida: "15:20" }, 4: { llegada: "11:40", salida: "22:15" } } },
+    { id: "e8", nombre: "Diego Arranz (ficticio)", via: "Teléfono", contacto: "600 000 008", dias: { 1: { llegada: "07:50", salida: "15:10" }, 2: { llegada: "08:45", salida: "15:30" }, 4: { llegada: "11:30", salida: "22:00" } } },
+    { id: "e9", nombre: "Irene Nieto (ficticia)", via: "Telegram", contacto: "@irene_prueba", dias: sem("08:30", "15:25") },
+    { id: "e10", nombre: "Alberto Rey (ficticio)", via: "Correo", contacto: "alberto@prueba.es", dias: { 2: { llegada: "11:50", salida: "22:20" }, 3: { llegada: "08:00", salida: "15:00" }, 4: { llegada: "11:50", salida: "22:20" }, 5: { llegada: "08:00", salida: "15:00" } } }
+  ];
+  const UID = "persona-de-prueba";
+  const leerYo = () => { try { return JSON.parse(store.get("rueda-prueba-yo") || "null"); } catch (e) { return null; } };
+  const lista = () => { const y = leerYo(); return FICTICIOS.concat(y ? [{ id: UID, ...y }] : []).map(d => ({ ...d })); };
+  const usuarioPrueba = () => ({ uid: UID, email: store.get("rueda-prueba-email") || "", displayName: "" });
+  let authCb = () => {}, dataCb = () => {};
+  let sesion = store.get("rueda-prueba-fuera") !== "1"; // se entra directamente salvo que se haya cerrado sesión
+  const emitir = () => setTimeout(() => dataCb(lista()), 30);
+  const entrar = email => { if (email) store.set("rueda-prueba-email", email); store.del("rueda-prueba-fuera"); sesion = true; authCb(usuarioPrueba()); };
+  const salir = () => { sesion = false; store.set("rueda-prueba-fuera", "1"); authCb(null); };
+  return {
+    onAuth: cb => { authCb = cb; setTimeout(() => cb(sesion ? usuarioPrueba() : null), 30); },
+    google: async () => entrar(),
+    sendLink: async () => {},
+    isLink: () => false,
+    finishLink: async email => entrar(email),
+    signOut: async () => salir(),
+    watch: cb => { dataCb = cb; emitir(); return () => {}; },
+    save: async (uid, d) => { store.set("rueda-prueba-yo", JSON.stringify(d)); emitir(); },
+    remove: async () => { store.del("rueda-prueba-yo"); emitir(); },
+    deleteAccount: async () => { store.del("rueda-prueba-email"); salir(); },
+    isAdmin: async () => false,
+    esMiembro: async () => true, // en la versión de prueba no hay código de invitación
+    unirse: async () => {},
+    salirGrupo: async () => {},
+    demoEntrar: entrar
+  };
+}
+
+// ================= Estado =================
+let usuario = null, myId = null, soyAdmin = false;
+let gente = [], yo = null, unsub = null, cargado = false;
+let conSabado = false;
+const diaHoy = () => { const d = new Date().getDay(); return d >= 1 && d <= 6 ? d : 1; };
+let diaSel = diaHoy();
+let vista = "coin";
+
+// ================= Acceso =================
+function mostrarAcceso() {
+  document.body.classList.add("noauth");
+  $("#v-auth").hidden = false; $("#v-codigo").hidden = true; $("#v-coin").hidden = true; $("#v-yo").hidden = true; $("#tabbar").hidden = true;
+}
+
+$("#btn-google").addEventListener("click", async () => {
+  try { await api.google(); }
+  catch (e) {
+    if (e.code === "auth/popup-closed-by-user" || e.code === "auth/cancelled-popup-request") return;
+    toast("No se pudo entrar con Google. Prueba con tu correo.");
+  }
+});
+
+$("#form-mail").addEventListener("submit", async e => {
+  e.preventDefault();
+  const email = $("#f-mail").value.trim();
+  const err = $("#mail-err");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { err.textContent = "Escribe un correo válido, por ejemplo nombre@correo.es."; err.hidden = false; return; }
+  err.hidden = true;
+  const b = $("#btn-mail"); b.disabled = true; b.textContent = "Enviando…";
+  try {
+    if (DEMO) { api.demoEntrar(email); return; }
+    await api.sendLink(email);
+    store.set(CLAVE_MAIL, email);
+    $("#mail-to").textContent = email;
+    $("#form-mail").hidden = true; $("#mail-sent").hidden = false;
+  } catch (ex) {
+    err.textContent = ex.code === "auth/invalid-email" ? "Ese correo no parece válido." : "No se pudo enviar el enlace. Inténtalo de nuevo en unos minutos.";
+    err.hidden = false;
+  } finally { b.disabled = false; b.textContent = "Enviarme el enlace de acceso"; }
+});
+$("#mail-again").addEventListener("click", () => { $("#mail-sent").hidden = true; $("#form-mail").hidden = false; $("#f-mail").focus(); });
+
+// Volver desde el enlace del correo
+async function completarEnlace() {
+  if (DEMO || !api.isLink()) return;
+  let email = store.get(CLAVE_MAIL);
+  if (!email) {
+    // Enlace abierto en otro dispositivo: pedimos confirmar el correo
+    mostrarAcceso();
+    $("#auth-start").querySelector("h2").textContent = "Confirma tu correo";
+    $("#auth-start").querySelector(".lead").textContent = "Has abierto el enlace en un dispositivo distinto. Escribe el mismo correo para terminar de entrar.";
+    $("#btn-google").hidden = true; $(".or").hidden = true;
+    $("#btn-mail").textContent = "Entrar";
+    const f = $("#form-mail");
+    const nuevo = f.cloneNode(true); f.replaceWith(nuevo);
+    nuevo.addEventListener("submit", async ev => {
+      ev.preventDefault();
+      const m = nuevo.querySelector("#f-mail").value.trim();
+      try { await api.finishLink(m); history.replaceState(null, "", location.pathname); location.reload(); }
+      catch (ex) { const er = nuevo.querySelector("#mail-err"); er.textContent = "Ese correo no coincide con el del enlace, o el enlace ha caducado. Pide uno nuevo."; er.hidden = false; }
+    });
+    return;
+  }
+  try { await api.finishLink(email); store.del(CLAVE_MAIL); }
+  catch (e) { toast("El enlace ha caducado o ya se usó. Pide uno nuevo."); }
+  history.replaceState(null, "", location.pathname);
+}
+
+// ================= Coincidencias =================
+const cercanos = (d, k) => {
+  const mia = yo && yo.dias && yo.dias[d] && yo.dias[d][k];
+  if (!mia) return [];
+  return gente.filter(g => g.id !== myId && g.dias && g.dias[d] && g.dias[d][k])
+    .map(g => ({ g, t: g.dias[d][k], dif: min(g.dias[d][k]) - min(mia) }))
+    // Ida: llegan a tu hora o hasta 30 min antes. Vuelta: salen a tu hora o hasta 30 min después.
+    .filter(x => k === "llegada" ? x.dif <= 0 && x.dif >= -MARGEN : x.dif >= 0 && x.dif <= MARGEN)
+    .sort((a, b) => Math.abs(a.dif) - Math.abs(b.dif));
+};
+const listaNombres = arr => {
+  const n = arr.map(x => x.g.nombre || "Alguien");
+  return n.length === 1 ? n[0] : n.slice(0, -1).join(", ") + " y " + n[n.length - 1];
+};
+
+function renderCoin() {
+  const lista = $("#lista"), df = $("#dayfilter");
+  lista.replaceChildren(); df.replaceChildren();
+  $("#lead").textContent = "A la ida, quien llega a Segovia hasta media hora antes que tú; a la vuelta, quien sale hasta media hora después. Los detalles, los habláis entre vosotros.";
+  if (!cargado) { lista.append(el("p", "hint", "Cargando…")); return; }
+
+  if (!yo) {
+    df.hidden = true;
+    const otros = gente.filter(g => g.id !== myId).length;
+    const e = el("div", "empty");
+    e.append(el("b", null, "Apúntate para ver tus coincidencias"));
+    e.append(document.createTextNode((otros === 1 ? "Ya hay 1 persona apuntada. " : `Ya hay ${otros} personas apuntadas. `) + "Pon tu nombre, tu contacto y tu horario."));
+    const b = el("button", "btn primary", "Apuntarme"); b.type = "button"; b.dataset.act = "ir-yo"; b.style.marginTop = "14px";
+    e.append(el("br"), b);
+    lista.append(e);
+    return;
+  }
+
+  const maxDia = hayS(yo) ? 6 : 5;
+  if (diaSel > maxDia) diaSel = 1;
+  df.hidden = false;
+  for (let d = 1; d <= maxDia; d++) {
+    const n = new Set([...cercanos(d, "llegada"), ...cercanos(d, "salida")].map(x => x.g.id)).size;
+    const b = el("button"); b.type = "button"; b.dataset.d = d;
+    b.setAttribute("aria-label", `${NOMBRE_DIA[d]}: ${n} coincidencias`);
+    b.setAttribute("aria-pressed", String(diaSel === d));
+    b.append(el("span", null, LETRA[d]), el("span", "n", va(yo, d) ? String(n) : "–"));
+    df.append(b);
+  }
+
+  const d = diaSel, mio = yo.dias && yo.dias[d];
+  const box = el("div", "mine");
+  const who = el("div", "who"); who.append(el("b", null, yo.nombre), document.createTextNode(" · " + NOMBRE_DIA[d]));
+  const t1 = el("div", "t"); t1.append(el("small", null, "Llegada a Segovia"), el("span", null, (mio && mio.llegada) || "—"));
+  const t2 = el("div", "t"); t2.append(el("small", null, "Salida de Segovia"), el("span", null, (mio && mio.salida) || "—"));
+  const ed = el("button", "linkbtn", "Cambiar"); ed.type = "button"; ed.dataset.act = "ir-yo";
+  box.append(who, t1, t2, ed);
+  lista.append(box);
+
+  if (!mio || (!mio.llegada && !mio.salida)) {
+    const e = el("div", "empty");
+    e.append(el("b", null, `El ${NOMBRE_DIA[d]} no tienes horario`));
+    e.append(document.createTextNode("Si ese día vas a Segovia, añade tus horas en «Mi horario»."));
+    lista.append(e);
+    return;
+  }
+
+  const rango = k => k === "llegada" ? `llegan entre ${hm(min(mio.llegada) - MARGEN)} y ${mio.llegada}` : `salen entre ${mio.salida} y ${hm(min(mio.salida) + MARGEN)}`;
+  [["llegada", "ida", "→", "Ida"], ["salida", "vuelta", "←", "Vuelta"]].forEach(([k, palabra, flecha, titulo]) => {
+    const sec = el("section", "leg");
+    const h = el("h3"); h.append(el("span", "arrow", flecha), document.createTextNode(`${titulo} · ${mio[k] ? rango(k) : "sin hora"}`));
+    sec.append(h);
+    if (!mio[k]) { sec.append(el("p", "verdict none", `No has puesto hora de ${k} el ${NOMBRE_DIA[d]}.`)); lista.append(sec); return; }
+    const res = cercanos(d, k);
+    if (!res.length) sec.append(el("p", "verdict none", `Nadie coincide todavía con tus necesidades de ${palabra}.`));
+    else {
+      sec.append(el("p", "verdict", `${listaNombres(res)} ${res.length === 1 ? "coincide" : "coinciden"} con tus necesidades de ${palabra}.`));
+      const box2 = el("div", "people");
+      res.forEach(x => box2.append(fila(x)));
+      sec.append(box2);
+    }
+    lista.append(sec);
+  });
+}
+
+function fila(x) {
+  const o = x.g;
+  const row = el("div", "pp");
+  row.append(el("span", "initials", iniciales(o.nombre)), el("span", "nm", o.nombre || "Sin nombre"));
+  const tm = el("span", "tm", x.t);
+  tm.append(el("small", null, x.dif === 0 ? "a la misma hora" : `${Math.abs(x.dif)} min ${x.dif > 0 ? "después" : "antes"}`));
+  row.append(tm);
+  const ct = el("div", "ct");
+  if (o.contacto) {
+    ct.append(document.createTextNode((o.via || "Contacto") + ":"), el("code", null, o.contacto));
+    const cp = el("button", "btn small", "Copiar"); cp.type = "button"; cp.dataset.act = "copiar"; cp.dataset.txt = o.contacto;
+    ct.append(cp);
+  } else ct.append(document.createTextNode("No ha dejado contacto."));
+  if (soyAdmin) { const q = el("button", "linkbtn danger", "Quitar"); q.type = "button"; q.dataset.act = "quitar"; q.dataset.id = o.id; ct.append(q); }
+  row.append(ct);
+  return row;
+}
+
+$("#lista").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-act]"); if (!b) return;
+  const act = b.dataset.act;
+  if (act === "ir-yo") ir("yo");
+  else if (act === "copiar") {
+    const txt = b.dataset.txt, code = b.parentElement.querySelector("code");
+    Promise.resolve().then(() => navigator.clipboard.writeText(txt)).then(() => toast("Contacto copiado"))
+      .catch(() => { const r = document.createRange(); r.selectNodeContents(code); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast("Mantén pulsado para copiar"); });
+  } else if (act === "quitar") {
+    if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "¿Quitar de Rueda?"; setTimeout(() => { b.dataset.armed = ""; b.textContent = "Quitar"; }, 4000); return; }
+    try { await api.remove(b.dataset.id); await api.salirGrupo(b.dataset.id); toast("Persona quitada"); } catch (ex) { toast("No se pudo quitar."); }
+  }
+});
+$("#dayfilter").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; diaSel = +b.dataset.d; renderCoin(); });
+
+// ================= Mi horario =================
+function pintarDias(dias) {
+  const cont = $("#dias"); cont.replaceChildren();
+  for (let d = 1; d <= (conSabado ? 6 : 5); d++) {
+    const v = (dias && dias[d]) || { llegada: "", salida: "" };
+    const row = el("div", "drow" + (v.llegada || v.salida ? "" : " off")); row.dataset.d = d;
+    const lab = el("span", "dl"); lab.append(document.createTextNode(LETRA[d]), el("small", null, NOMBRE_DIA[d].slice(0, 3)));
+    const i1 = el("input"); i1.type = "time"; i1.id = "ll-" + d; i1.value = v.llegada || ""; i1.setAttribute("aria-label", "Hora de llegada a Segovia el " + NOMBRE_DIA[d]);
+    const i2 = el("input"); i2.type = "time"; i2.id = "sa-" + d; i2.value = v.salida || ""; i2.setAttribute("aria-label", "Hora de salida de Segovia el " + NOMBRE_DIA[d]);
+    row.append(lab, i1, i2);
+    cont.append(row);
+  }
+  $("#ver-sabado").textContent = conSabado ? "Quitar sábado" : "Añadir sábado";
+}
+function leerDias() {
+  const dias = {};
+  $$("#dias .drow").forEach(r => {
+    const d = r.dataset.d, ll = $("#ll-" + d).value, sa = $("#sa-" + d).value;
+    if (ll || sa) dias[d] = { llegada: ll, salida: sa };
+  });
+  return dias;
+}
+function cargarForm() {
+  conSabado = hayS(yo);
+  $("#f-nombre").value = yo ? yo.nombre || "" : (usuario && usuario.displayName) || "";
+  $("#f-via").value = yo && yo.via ? yo.via : "WhatsApp";
+  $("#f-contacto").value = yo ? yo.contacto || "" : "";
+  pintarDias(yo ? yo.dias : { 1: { llegada: "08:00", salida: "15:00" } });
+  $("#t-yo").textContent = yo ? "Mis datos" : "Apúntate";
+  $("#guardar").textContent = yo ? "Guardar cambios" : "Apuntarme";
+  $("#baja-box").hidden = !yo;
+  $("#borrar-mio").hidden = false; $("#baja-confirm").hidden = true;
+  if (yo) $("#baja-ok").hidden = true;
+  $("#saved-at").textContent = yo && yo.actualizado ? "Última actualización: " + new Date(yo.actualizado).toLocaleDateString("es-ES", { day: "numeric", month: "long" }) : "";
+  $("#form-err").hidden = true;
+  $("#session-who").textContent = usuario ? "Has entrado como " + (usuario.email || usuario.displayName || "usuario") : "";
+}
+$("#dias").addEventListener("input", e => {
+  const r = e.target.closest(".drow"); if (!r) return;
+  const d = r.dataset.d; r.classList.toggle("off", !$("#ll-" + d).value && !$("#sa-" + d).value);
+});
+$("#copiar-lunes").addEventListener("click", () => {
+  const ll = $("#ll-1").value, sa = $("#sa-1").value;
+  for (let d = 2; d <= 5; d++) { $("#ll-" + d).value = ll; $("#sa-" + d).value = sa; $("#ll-" + d).closest(".drow").classList.toggle("off", !ll && !sa); }
+  toast("Horario del lunes copiado hasta el viernes");
+});
+$("#ver-sabado").addEventListener("click", () => { const d = leerDias(); conSabado = !conSabado; if (!conSabado) delete d[6]; pintarDias(d); });
+
+$("#form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = $("#form-err");
+  const nombre = $("#f-nombre").value.trim().slice(0, 40);
+  const contacto = $("#f-contacto").value.trim().slice(0, 60);
+  const dias = leerDias();
+  let msg = "";
+  if (!nombre) msg = "Escribe tu nombre para que los demás sepan quién eres.";
+  else if (!contacto) msg = "Deja una forma de contacto: es lo único que la gente necesita para escribirte.";
+  else if (!Object.keys(dias).length) msg = "Pon la hora de al menos un día.";
+  else if (Object.values(dias).some(x => x.llegada && x.salida && min(x.salida) <= min(x.llegada))) msg = "La hora de salida de Segovia tiene que ser posterior a la de llegada.";
+  if (msg) { err.textContent = msg; err.hidden = false; return; }
+  err.hidden = true;
+  const nuevo = !yo;
+  const b = $("#guardar"); b.disabled = true;
+  try {
+    const datos = { nombre, via: $("#f-via").value, contacto, dias, actualizado: new Date().toISOString() };
+    await api.save(myId, datos);
+    yo = { id: myId, ...datos };
+    toast(nuevo ? "¡Apuntado! Estas son tus coincidencias" : "Horario guardado");
+    ir("coin");
+  } catch (ex) { toast("No se pudo guardar. Revisa la conexión e inténtalo otra vez."); }
+  finally { b.disabled = false; }
+});
+
+// Baja: un botón y una confirmación en la propia página
+$("#borrar-mio").addEventListener("click", () => { $("#borrar-mio").hidden = true; $("#baja-confirm").hidden = false; $("#baja-si").focus(); });
+$("#baja-no").addEventListener("click", () => { $("#baja-confirm").hidden = true; $("#borrar-mio").hidden = false; });
+$("#baja-si").addEventListener("click", async () => {
+  const b = $("#baja-si"); b.disabled = true; b.textContent = "Eliminando…";
+  try {
+    await api.remove(myId);
+    await api.salirGrupo(myId);
+    yo = null;
+    await api.deleteAccount(); // borra también la cuenta de acceso; vuelve a la pantalla de entrada
+    banner("Te has dado de baja. Tus datos se han borrado de Rueda.");
+  } catch (ex) { toast("No se pudo completar la baja. Inténtalo otra vez."); }
+  finally { b.disabled = false; b.textContent = "Sí, eliminarme"; }
+});
+$("#salir").addEventListener("click", () => api.signOut());
+
+// ================= Navegación =================
+function ir(v) {
+  vista = v;
+  document.body.classList.remove("noauth");
+  $("#v-auth").hidden = true; $("#v-codigo").hidden = true; $("#tabbar").hidden = false;
+  const coin = v === "coin";
+  $("#v-coin").hidden = !coin; $("#v-yo").hidden = coin;
+  $("#tab-coin").setAttribute("aria-selected", String(coin));
+  $("#tab-yo").setAttribute("aria-selected", String(!coin));
+  coin ? renderCoin() : cargarForm();
+  window.scrollTo(0, 0);
+}
+$("#tab-coin").addEventListener("click", () => ir("coin"));
+$("#tab-yo").addEventListener("click", () => ir("yo"));
+
+// ================= Aviso de privacidad =================
+function pintarAviso(cont) {
+  const resp = (window.RUEDA_RESPONSABLE || "").trim();
+  cont.replaceChildren();
+  cont.append(el("h3", null, "Aviso de privacidad"));
+  const dl = el("dl");
+  [
+    ["Qué datos guardamos", "Tu nombre, tu forma de contacto, tu horario y el correo con el que entras. El correo no se muestra a nadie."],
+    ["Para qué", "Solo para mostrar coincidencias de horario entre las personas apuntadas y que podáis poneros en contacto. Rueda no organiza viajes, no hace reservas y no cobra nada: los acuerdos son entre vosotros."],
+    ["Quién los ve", "Únicamente las personas que han entrado con el código de invitación del grupo."],
+    ["Dónde se guardan", "En Google Firebase, en servidores de la Unión Europea."],
+    ["Cuánto tiempo", "Hasta que te des de baja. «Darme de baja» los borra en ese momento, junto con tu cuenta de acceso."],
+    ["Tus derechos", "Puedes consultar, cambiar o borrar tus datos desde la propia app cuando quieras." + (resp ? " Para cualquier duda: " + resp + "." : " Para cualquier duda, escribe a quien organiza Rueda.")]
+  ].forEach(([t, d]) => dl.append(el("dt", null, t), el("dd", null, d)));
+  cont.append(dl);
+}
+pintarAviso($("#aviso-1")); pintarAviso($("#aviso-2"));
+
+// ================= Código de invitación =================
+function mostrarCodigo() {
+  document.body.classList.add("noauth");
+  $("#v-auth").hidden = true; $("#v-coin").hidden = true; $("#v-yo").hidden = true; $("#tabbar").hidden = true;
+  $("#v-codigo").hidden = false;
+  $("#demo-codigo").hidden = !DEMO;
+  $("#codigo-who").textContent = usuario ? "Has entrado como " + (usuario.email || usuario.displayName || "usuario") + "." : "";
+  window.scrollTo(0, 0);
+}
+$("#form-codigo").addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = $("#codigo-err");
+  const codigo = $("#f-codigo").value.trim().toUpperCase().replace(/\s+/g, "");
+  let msg = "";
+  if (!codigo) msg = "Escribe el código de invitación.";
+  else if (!$("#f-acepto").checked) msg = "Para entrar tienes que aceptar el aviso de privacidad.";
+  if (msg) { err.textContent = msg; err.hidden = false; return; }
+  err.hidden = true;
+  const b = $("#btn-codigo"); b.disabled = true; b.textContent = "Comprobando…";
+  try {
+    await api.unirse(myId, codigo);
+    $("#f-codigo").value = ""; $("#f-acepto").checked = false;
+    arrancar();
+  } catch (ex) {
+    err.textContent = ex.code === "permission-denied" ? "Ese código no es correcto. Pídeselo a quien te invitó." : "No se pudo comprobar el código. Revisa la conexión e inténtalo otra vez.";
+    err.hidden = false;
+  } finally { b.disabled = false; b.textContent = "Entrar en Rueda"; }
+});
+$("#otra-cuenta").addEventListener("click", () => api.signOut());
+
+// ================= Arranque =================
+await completarEnlace();
+let primeraCarga = true;
+api.onAuth(async u => {
+  usuario = u;
+  if (unsub) { unsub(); unsub = null; }
+  if (!u) { myId = null; yo = null; gente = []; cargado = false; primeraCarga = true; mostrarAcceso(); return; }
+  if (!DEMO) banner("");
+  myId = u.uid;
+  if (!(await api.esMiembro(u.uid))) { mostrarCodigo(); return; }
+  arrancar();
+});
+
+function arrancar() {
+  api.isAdmin(myId).then(a => { soyAdmin = a; if (vista === "coin" && cargado) renderCoin(); });
+  ir("coin");
+  unsub = api.watch(lista => {
+    gente = lista; cargado = true;
+    yo = gente.find(g => g.id === myId) || null;
+    if (primeraCarga) { primeraCarga = false; if (!yo) { ir("yo"); return; } }
+    if (vista === "coin") renderCoin();
+  }, () => banner("Se ha perdido la conexión. Recarga la página."));
+}
+</script>
+</body>
+</html>
