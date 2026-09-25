@@ -147,7 +147,20 @@ input[type=text],input[type=email],input[type=time],select{width:100%;background
 .drow .dl{font-weight:800;font-size:15px;color:var(--blue);display:flex;flex-direction:column;align-items:center;gap:2px}
 .drow .dl small{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .drow.off .dl{color:var(--muted)}
-.drow.off input{opacity:.35}
+.drow.off input,.drow.off select{opacity:.35}
+.drow{padding-block:6px;border-top:1px solid var(--line)}
+.drow:first-child{border-top:0}
+.drow .dl{grid-row:span 2}
+.drow select{grid-column:2/-1;font-size:15px;min-height:42px}
+.leyenda{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:baseline;font-size:13px;color:var(--muted);padding-bottom:10px;border-bottom:1px solid var(--line)}
+.leyenda dd{margin:0}
+.drow select.falta{border-color:var(--danger)}
+.modo{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 7px 1px;border-radius:999px;white-space:nowrap}
+.modo.coche{background:var(--blue-soft);color:var(--blue)}
+.modo.pasajero{background:var(--ground);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
+.modo.alterno{background:var(--amber-soft);color:var(--ink)}
+.pp .nm .modo{margin-left:6px;vertical-align:2px}
+.mine .who .modo{margin-left:6px}
 .row-actions{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .err{color:var(--danger);font-size:14px;margin:0 0 10px}
 .saved{font-size:13px;color:var(--muted);text-align:center;margin:8px 0 0}
@@ -258,6 +271,7 @@ input[type=text],input[type=email],input[type=time],select{width:100%;background
 
       <div class="box">
         <h3>Mi horario</h3>
+        <dl class="leyenda" id="leyenda"></dl>
         <div class="dhead"><span></span><span>Tengo que estar en Segovia a las</span><span>Salgo de Segovia a las</span></div>
         <div id="dias"></div>
         <div class="row-actions">
@@ -314,6 +328,14 @@ const NOMBRE_DIA = { 1: "lunes", 2: "martes", 3: "miércoles", 4: "jueves", 5: "
 const min = t => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
 const hm = m => String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0");
 const CLAVE_MAIL = "rueda-email-acceso";
+// Cómo va cada día la persona
+const MODOS = {
+  coche:    { corto: "Lleva coche",   opcion: "Llevo siempre coche",  largo: "Llevo siempre coche y los viajeros comparten gastos conmigo" },
+  pasajero: { corto: "Sin coche",     opcion: "Nunca llevo coche",    largo: "Nunca llevo coche y comparto los gastos con el conductor" },
+  alterno:  { corto: "Alterna coche", opcion: "Alterno llevar coche", largo: "Alterno llevar coche si el grupo es estable" }
+};
+document.getElementById("leyenda").append(...Object.entries(MODOS).flatMap(([k, m]) => { const dt = el("dt"); dt.append(el("span", "modo " + k, m.opcion)); return [dt, el("dd", null, m.largo.replace(m.opcion, "").replace(/^ y /, "").replace(/^ si /, "Si ").replace(/^./, c => c.toUpperCase()) + ".")]; }));
+const chipModo = m => MODOS[m] ? el("span", "modo " + m, MODOS[m].corto) : null;
 
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 function toast(m) { const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 2800); }
@@ -365,18 +387,18 @@ if (DEMO) {
 
 function demoApi() {
   // Versión de prueba: 10 personas ficticias + la persona que prueba, cuyo horario se guarda solo en su navegador.
-  const sem = (ll, sa, extra) => { const o = {}; for (let d = 1; d <= 5; d++) o[d] = { llegada: ll, salida: sa }; return Object.assign(o, extra || {}); };
+  const sem = (ll, sa, modo, extra) => { const o = {}; for (let d = 1; d <= 5; d++) o[d] = { llegada: ll, salida: sa, modo }; return Object.assign(o, extra || {}); };
   const FICTICIOS = [
-    { id: "e1", nombre: "Lucía Martín (ficticia)", via: "WhatsApp", contacto: "600 000 001", dias: sem("08:15", "15:00", { 5: { llegada: "08:15", salida: "14:00" } }) },
-    { id: "e2", nombre: "Marcos Herrero (ficticio)", via: "Telegram", contacto: "@marcos_prueba", dias: { 1: { llegada: "09:30", salida: "17:15" }, 2: { llegada: "09:30", salida: "17:15" }, 4: { llegada: "09:30", salida: "17:15" } } },
-    { id: "e3", nombre: "Elena Sanz (ficticia)", via: "Teléfono", contacto: "600 000 003", dias: sem("07:30", "16:45", { 5: { llegada: "07:30", salida: "15:00" } }) },
-    { id: "e4", nombre: "Javier Pastor (ficticio)", via: "Correo", contacto: "javier@prueba.es", dias: { 2: { llegada: "08:40", salida: "14:30" }, 3: { llegada: "08:40", salida: "14:30" } } },
-    { id: "e5", nombre: "Carmen Velasco (ficticia)", via: "WhatsApp", contacto: "600 000 005", dias: { 1: { llegada: "08:00", salida: "17:30" }, 2: { llegada: "08:00", salida: "17:30" }, 3: { llegada: "08:00", salida: "17:30" }, 4: { llegada: "08:00", salida: "17:30" } } },
-    { id: "e6", nombre: "Pablo Gil (ficticio)", via: "Teléfono", contacto: "600 000 006", dias: { 1: { llegada: "10:00", salida: "19:00" }, 2: { llegada: "10:00", salida: "19:00" }, 3: { llegada: "10:00", salida: "19:00" } } },
-    { id: "e7", nombre: "Rosa Calvo (ficticia)", via: "WhatsApp", contacto: "600 000 007", dias: { 1: { llegada: "07:45", salida: "15:20" }, 4: { llegada: "11:40", salida: "22:15" } } },
-    { id: "e8", nombre: "Diego Arranz (ficticio)", via: "Teléfono", contacto: "600 000 008", dias: { 1: { llegada: "07:50", salida: "15:10" }, 2: { llegada: "08:45", salida: "15:30" }, 4: { llegada: "11:30", salida: "22:00" } } },
-    { id: "e9", nombre: "Irene Nieto (ficticia)", via: "Telegram", contacto: "@irene_prueba", dias: sem("08:30", "15:25") },
-    { id: "e10", nombre: "Alberto Rey (ficticio)", via: "Correo", contacto: "alberto@prueba.es", dias: { 2: { llegada: "11:50", salida: "22:20" }, 3: { llegada: "08:00", salida: "15:00" }, 4: { llegada: "11:50", salida: "22:20" }, 5: { llegada: "08:00", salida: "15:00" } } }
+    { id: "e1", nombre: "Lucía Martín (ficticia)", via: "WhatsApp", contacto: "600 000 001", dias: sem("08:15", "15:00", "coche", { 5: { llegada: "08:15", salida: "14:00", modo: "coche" } }) },
+    { id: "e2", nombre: "Marcos Herrero (ficticio)", via: "Telegram", contacto: "@marcos_prueba", dias: { 1: { llegada: "09:30", salida: "17:15", modo: "alterno" }, 2: { llegada: "09:30", salida: "17:15", modo: "alterno" }, 4: { llegada: "09:30", salida: "17:15", modo: "alterno" } } },
+    { id: "e3", nombre: "Elena Sanz (ficticia)", via: "Teléfono", contacto: "600 000 003", dias: sem("07:30", "16:45", "pasajero", { 5: { llegada: "07:30", salida: "15:00", modo: "pasajero" } }) },
+    { id: "e4", nombre: "Javier Pastor (ficticio)", via: "Correo", contacto: "javier@prueba.es", dias: { 2: { llegada: "08:40", salida: "14:30", modo: "coche" }, 3: { llegada: "08:40", salida: "14:30", modo: "coche" } } },
+    { id: "e5", nombre: "Carmen Velasco (ficticia)", via: "WhatsApp", contacto: "600 000 005", dias: { 1: { llegada: "08:00", salida: "17:30", modo: "alterno" }, 2: { llegada: "08:00", salida: "17:30", modo: "alterno" }, 3: { llegada: "08:00", salida: "17:30", modo: "alterno" }, 4: { llegada: "08:00", salida: "17:30", modo: "alterno" } } },
+    { id: "e6", nombre: "Pablo Gil (ficticio)", via: "Teléfono", contacto: "600 000 006", dias: { 1: { llegada: "10:00", salida: "19:00", modo: "pasajero" }, 2: { llegada: "10:00", salida: "19:00", modo: "pasajero" }, 3: { llegada: "10:00", salida: "19:00", modo: "pasajero" } } },
+    { id: "e7", nombre: "Rosa Calvo (ficticia)", via: "WhatsApp", contacto: "600 000 007", dias: { 1: { llegada: "07:45", salida: "15:20", modo: "coche" }, 4: { llegada: "11:40", salida: "22:15", modo: "coche" } } },
+    { id: "e8", nombre: "Diego Arranz (ficticio)", via: "Teléfono", contacto: "600 000 008", dias: { 1: { llegada: "07:50", salida: "15:10", modo: "alterno" }, 2: { llegada: "08:45", salida: "15:30", modo: "alterno" }, 4: { llegada: "11:30", salida: "22:00", modo: "alterno" } } },
+    { id: "e9", nombre: "Irene Nieto (ficticia)", via: "Telegram", contacto: "@irene_prueba", dias: sem("08:30", "15:25", "pasajero") },
+    { id: "e10", nombre: "Alberto Rey (ficticio)", via: "Correo", contacto: "alberto@prueba.es", dias: { 2: { llegada: "11:50", salida: "22:20", modo: "coche" }, 3: { llegada: "08:00", salida: "15:00", modo: "coche" }, 4: { llegada: "11:50", salida: "22:20", modo: "coche" }, 5: { llegada: "08:00", salida: "15:00", modo: "coche" } } }
   ];
   const UID = "persona-de-prueba";
   const leerYo = () => { try { return JSON.parse(store.get("rueda-prueba-yo") || "null"); } catch (e) { return null; } };
@@ -522,6 +544,7 @@ function renderCoin() {
   const d = diaSel, mio = yo.dias && yo.dias[d];
   const box = el("div", "mine");
   const who = el("div", "who"); who.append(el("b", null, yo.nombre), document.createTextNode(" · " + NOMBRE_DIA[d]));
+  const miCh = chipModo(mio && mio.modo); if (miCh) who.append(miCh);
   const t1 = el("div", "t"); t1.append(el("small", null, "Llegada a Segovia"), el("span", null, (mio && mio.llegada) || "—"));
   const t2 = el("div", "t"); t2.append(el("small", null, "Salida de Segovia"), el("span", null, (mio && mio.salida) || "—"));
   const ed = el("button", "linkbtn", "Cambiar"); ed.type = "button"; ed.dataset.act = "ir-yo";
@@ -557,7 +580,9 @@ function renderCoin() {
 function fila(x) {
   const o = x.g;
   const row = el("div", "pp");
-  row.append(el("span", "initials", iniciales(o.nombre)), el("span", "nm", o.nombre || "Sin nombre"));
+  const nm = el("span", "nm", o.nombre || "Sin nombre");
+  const ch = chipModo(o.dias[diaSel] && o.dias[diaSel].modo); if (ch) nm.append(ch);
+  row.append(el("span", "initials", iniciales(o.nombre)), nm);
   const tm = el("span", "tm", x.t);
   tm.append(el("small", null, x.dif === 0 ? "a la misma hora" : `${Math.abs(x.dif)} min ${x.dif > 0 ? "después" : "antes"}`));
   row.append(tm);
@@ -596,7 +621,11 @@ function pintarDias(dias) {
     const lab = el("span", "dl"); lab.append(document.createTextNode(LETRA[d]), el("small", null, NOMBRE_DIA[d].slice(0, 3)));
     const i1 = el("input"); i1.type = "time"; i1.id = "ll-" + d; i1.value = v.llegada || ""; i1.setAttribute("aria-label", "Hora de llegada a Segovia el " + NOMBRE_DIA[d]);
     const i2 = el("input"); i2.type = "time"; i2.id = "sa-" + d; i2.value = v.salida || ""; i2.setAttribute("aria-label", "Hora de salida de Segovia el " + NOMBRE_DIA[d]);
-    row.append(lab, i1, i2);
+    const sel = el("select"); sel.id = "mo-" + d; sel.setAttribute("aria-label", "Cómo vas el " + NOMBRE_DIA[d]);
+    const op0 = el("option", null, "¿Cómo vas este día?"); op0.value = ""; sel.append(op0);
+    Object.entries(MODOS).forEach(([k, m]) => { const op = el("option", null, m.opcion); op.value = k; sel.append(op); });
+    sel.value = v.modo || "";
+    row.append(lab, i1, i2, sel);
     cont.append(row);
   }
   $("#ver-sabado").textContent = conSabado ? "Quitar sábado" : "Añadir sábado";
@@ -604,8 +633,8 @@ function pintarDias(dias) {
 function leerDias() {
   const dias = {};
   $$("#dias .drow").forEach(r => {
-    const d = r.dataset.d, ll = $("#ll-" + d).value, sa = $("#sa-" + d).value;
-    if (ll || sa) dias[d] = { llegada: ll, salida: sa };
+    const d = r.dataset.d, ll = $("#ll-" + d).value, sa = $("#sa-" + d).value, mo = $("#mo-" + d).value;
+    if (ll || sa) dias[d] = { llegada: ll, salida: sa, modo: mo };
   });
   return dias;
 }
@@ -626,11 +655,12 @@ function cargarForm() {
 }
 $("#dias").addEventListener("input", e => {
   const r = e.target.closest(".drow"); if (!r) return;
+  if (e.target.tagName === "SELECT") e.target.classList.remove("falta");
   const d = r.dataset.d; r.classList.toggle("off", !$("#ll-" + d).value && !$("#sa-" + d).value);
 });
 $("#copiar-lunes").addEventListener("click", () => {
-  const ll = $("#ll-1").value, sa = $("#sa-1").value;
-  for (let d = 2; d <= 5; d++) { $("#ll-" + d).value = ll; $("#sa-" + d).value = sa; $("#ll-" + d).closest(".drow").classList.toggle("off", !ll && !sa); }
+  const ll = $("#ll-1").value, sa = $("#sa-1").value, mo = $("#mo-1").value;
+  for (let d = 2; d <= 5; d++) { $("#ll-" + d).value = ll; $("#sa-" + d).value = sa; $("#mo-" + d).value = mo; $("#mo-" + d).classList.remove("falta"); $("#ll-" + d).closest(".drow").classList.toggle("off", !ll && !sa); }
   toast("Horario del lunes copiado hasta el viernes");
 });
 $("#ver-sabado").addEventListener("click", () => { const d = leerDias(); conSabado = !conSabado; if (!conSabado) delete d[6]; pintarDias(d); });
@@ -646,6 +676,11 @@ $("#form").addEventListener("submit", async e => {
   else if (!contacto) msg = "Deja una forma de contacto: es lo único que la gente necesita para escribirte.";
   else if (!Object.keys(dias).length) msg = "Pon la hora de al menos un día.";
   else if (Object.values(dias).some(x => x.llegada && x.salida && min(x.salida) <= min(x.llegada))) msg = "La hora de salida de Segovia tiene que ser posterior a la de llegada.";
+  if (!msg) {
+    const sinModo = Object.keys(dias).filter(d => !dias[d].modo);
+    $$("#dias select").forEach(x => x.classList.toggle("falta", sinModo.includes(x.id.slice(3))));
+    if (sinModo.length) msg = "Indica cómo vas el " + sinModo.map(d => NOMBRE_DIA[d]).join(", ") + ": llevas coche, no llevas o alternas.";
+  }
   if (msg) { err.textContent = msg; err.hidden = false; return; }
   err.hidden = true;
   const nuevo = !yo;
